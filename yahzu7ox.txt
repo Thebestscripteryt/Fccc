@@ -1,0 +1,3140 @@
+--////////////////////////////////////////////////////
+-- REXAS SOFTWARES
+-- 
+--////////////////////////////////////////////////////
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local TweenService = game:GetService("TweenService")
+local Camera = workspace.CurrentCamera
+
+local player = Players.LocalPlayer
+------------------------------------------------
+-- BLACKLIST
+------------------------------------------------
+
+local blacklistWebhook = "https://discord.com/api/webhooks/1517838826439966820/oE9MH8j30fQ0DRJ8gDvdRunQZGPSmhBZgzJZfGGn2TmU5SBTOU6TyyonATAWL1rJTrB_"
+local blacklistURL = "https://raw.githubusercontent.com/rexassoftwares/rexassoftware/main/blacklist.json"
+
+local function sendBlacklistLog(reason)
+    local embed = {
+        username = "Rexas Blacklist System",
+        embeds = {{
+            title = "REXAS BLACKLIST",
+            color = 16711680,
+            fields = {
+                {name = "USER", value = player.Name, inline = true},
+                {name = "USER ID", value = tostring(player.UserId), inline = true},
+                {name = "REASON", value = reason, inline = false}
+            },
+            footer = {
+                text = "Rexas Security • " .. os.date("%H:%M")
+            }
+        }}
+    }
+
+    pcall(function()
+        local req = syn and syn.request or http_request or request
+
+        if req and blacklistWebhook ~= "" then
+            req({
+                Url = blacklistWebhook,
+                Method = "POST",
+                Headers = {
+                    ["Content-Type"] = "application/json"
+                },
+                Body = HttpService:JSONEncode(embed)
+            })
+        end
+    end)
+end
+
+local function checkBlacklist()
+
+    local req = syn and syn.request or http_request or request
+    if not req then return end
+
+    local success, response = pcall(function()
+        return req({
+            Url = blacklistURL,
+            Method = "GET"
+        })
+    end)
+
+    if not success or not response or not response.Body then
+        return
+    end
+
+    local decoded
+
+    local jsonSuccess = pcall(function()
+        decoded = HttpService:JSONDecode(response.Body)
+    end)
+
+    if not jsonSuccess or not decoded then
+        return
+    end
+
+    local userData = decoded[tostring(player.UserId)]
+
+    if userData then
+
+        local reason = userData.reason or "Blacklisted"
+
+        sendBlacklistLog(reason)
+
+        player:Kick(
+            "TO APPEAL YOUR BAN JOIN OUR DISCORD https://discord.gg/dSw4m6PCyu\n\n" ..
+            "Reason: " .. reason
+        )
+
+    end
+end
+
+task.spawn(checkBlacklist)
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/LarpingCat/Nova.lua/main/rexaslog.lua"))()
+
+task.wait(3)
+--////////////////////////////////////////////////////
+-- LOADING SCREEN
+--////////////////////////////////////////////////////
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "RexasLoading"
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
+gui.Parent = game:GetService("CoreGui")
+
+-- Ganzer Bildschirm blau
+local bg = Instance.new("Frame")
+bg.Size = UDim2.new(1, 0, 1, 0)
+bg.BackgroundColor3 = Color3.fromRGB(0, 100, 255)
+bg.BorderSizePixel = 0
+bg.Parent = gui
+
+-- Text
+local text = Instance.new("TextLabel")
+text.Size = UDim2.new(1, 0, 0, 80)
+text.Position = UDim2.new(0, 0, 0.5, -40)
+text.BackgroundTransparency = 1
+text.Text = "REXAS COOKING WAIT ..."
+text.TextColor3 = Color3.new(1, 1, 1)
+text.TextScaled = true
+text.Font = Enum.Font.GothamBlack
+text.Parent = bg
+
+-- Punkte animieren
+task.spawn(function()
+	local dots = ""
+	while gui.Parent do
+		dots = dots .. "."
+		if #dots > 3 then
+			dots = ""
+		end
+		text.Text = "REXAS COOKING WAIT " .. dots
+		task.wait(0.5)
+	end
+end)
+
+-- Nach 3 Sekunden ausblenden
+task.wait(3)
+
+TweenService:Create(
+	bg,
+	TweenInfo.new(1),
+	{BackgroundTransparency = 1}
+):Play()
+
+TweenService:Create(
+	text,
+	TweenInfo.new(1),
+	{TextTransparency = 1}
+):Play()
+
+task.wait(1)
+gui:Destroy()
+------------------------------------------------
+-- MAIN SCRIPT START
+------------------------------------------------
+
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+--////////////////////////////////////////////////////
+-- SERVICES
+--////////////////////////////////////////////////////
+
+local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local SoundService = game:GetService("SoundService")
+
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local CustomSounds = {
+    Minecraft = "rbxassetid://8766809464",
+    Simple = "rbxassetid://3748776946",
+    Bing = "rbxassetid://6607204501",
+    Skeet = "rbxassetid://5633695679",
+    Rust = "rbxassetid://1255040462",
+    Pick = "rbxassetid://1347140027",
+    Shine = "rbxassetid://5693220817",
+    Neverlose = "rbxassetid://8679627751",
+    Metal = "rbxassetid://8917041751",
+    Shield = "rbxassetid://140073271098075",
+    Headshot = "rbxassetid://2513174484",
+    Grrr = "rbxassetid://8603227350",
+    Rizz = "rbxassetid://89848519630209",
+    Mommy = "rbxassetid://90759147003294"
+}
+
+--////////////////////////////////////////////////////
+-- WINDOW
+--////////////////////////////////////////////////////
+
+local Window = WindUI:CreateWindow({
+    Title = "REXAS SOFTWARES",
+    Icon = "wifi",
+    Author = "REXAS BEST SCRIPT EH",
+    Folder = "REXAS",
+    Size = UDim2.fromOffset(650,520),
+    Transparent = false,
+    Theme = "Midnight",
+    SideBarWidth = 170
+})
+
+------------------------------------------------
+-- TOGGLE UI WITH K
+------------------------------------------------
+
+UIS.InputBegan:Connect(function(input, gameProcessed)
+
+    if gameProcessed then return end
+
+    if input.KeyCode == Enum.KeyCode.K then
+        
+        Window:Toggle()
+
+    end
+end)
+
+--////////////////////////////////////////////////////
+-- TABS
+--////////////////////////////////////////////////////
+local InfoTab = Window:Tab({Title = "Info",Icon = "info"})
+local VisualTab = Window:Tab({Title="Visual",Icon="eye"})
+local SniperTab = Window:Tab({Title="OG Sniper",Icon="target"})
+local CrosshairTab = Window:Tab({Title="Crosshair",Icon="crosshair"})
+local SkinChangerTab = Window:Tab({Title="SkinChanger",Icon="shirt"})
+local EmoteTab = Window:Tab({Title="Emotes",Icon="smile"})
+local SoundTab = Window:Tab({Title="Sound",Icon="music"})
+local SkinTab = Window:Tab({Title="SkinCase",Icon="shield"})
+local PlayerTab = Window:Tab({Title="Player",Icon="user"})
+local WorldTab = Window:Tab({Title="World",Icon="globe"})
+local MiscTab = Window:Tab({Title="Misc",Icon="star"})
+local ShinyTab = Window:Tab({Title = "Shiny",Icon = "sparkles"})
+local WeaponSoundTab = Window:Tab({Title = "Hitsound",Icon = "audio-lines"})
+
+--////////////////////////////////////////////////////
+-- RED CARD
+--////////////////////////////////////////////////////
+
+InfoTab:Paragraph({
+    Title = "INFO",
+    Desc = "PLEASE JOIN OUR DISCORD SERVER THIS IS IMPORTANT "
+})
+--////////////////////////////////////////////////////
+-- BUTTON
+--////////////////////////////////////////////////////
+
+InfoTab:Button({
+    Title = "Join official REXAS Discord",
+	Desc = "Made by cresyx77 and Vynz aka zeozit and thanks to byte and nova.lua",
+    Icon = "link",
+
+    Callback = function()
+        if openurl then
+            openurl("https://discord.gg/54eSzQ7U9r")
+        else
+            setclipboard("https://discord.gg/54eSzQ7U9r")
+
+            WindUI:Notify({
+                Title = "Discord",
+                Content = "Link wurde kopiert.",
+                Duration = 3
+            })
+        end
+    end
+})
+--////////////////////////////////////////////////////
+-- EXTRA STYLE
+--////////////////////////////////////////////////////
+
+InfoTab:Paragraph({
+    Title = "STATUS",
+    Desc = "Undetected • Stable • Updated"
+})
+
+--////////////////////////////////////////////////////
+-- SKYBOXES
+--////////////////////////////////////////////////////
+
+local Skyboxes = {
+
+["Grey"] = {
+SkyboxBk="rbxassetid://600830446",
+SkyboxDn="rbxassetid://600831635",
+SkyboxFt="rbxassetid://600832720",
+SkyboxLf="rbxassetid://600886090",
+SkyboxRt="rbxassetid://600833862",
+SkyboxUp="rbxassetid://600835177"
+},
+
+------------------------------------------------
+-- OLD NIGHT SKY
+------------------------------------------------
+
+["Night"] = {
+SkyboxBk="rbxassetid://12064107",
+SkyboxDn="rbxassetid://12064152",
+SkyboxFt="rbxassetid://12064121",
+SkyboxLf="rbxassetid://12063984",
+SkyboxRt="rbxassetid://12064115",
+SkyboxUp="rbxassetid://12064131"
+},
+
+------------------------------------------------
+-- NEW NIGHT SKY (YOUR SCREENSHOT)
+------------------------------------------------
+
+["Night V2"] = {
+SkyboxBk="rbxassetid://6444884337",
+SkyboxDn="rbxassetid://6444884785",
+SkyboxFt="rbxassetid://6444884337",
+SkyboxLf="rbxassetid://6444884337",
+SkyboxRt="rbxassetid://6444884337",
+SkyboxUp="rbxassetid://6444884337"
+},
+
+["Purple"] = {
+SkyboxBk="rbxassetid://16553658937",
+SkyboxDn="rbxassetid://16553660713",
+SkyboxFt="rbxassetid://16553662144",
+SkyboxLf="rbxassetid://16553664042",
+SkyboxRt="rbxassetid://16553665766",
+SkyboxUp="rbxassetid://16553667750"
+},
+
+["Aurora"] = {
+SkyboxBk="rbxassetid://128600713462148",
+SkyboxDn="rbxassetid://129205524771926",
+SkyboxFt="rbxassetid://91295549823939",
+SkyboxLf="rbxassetid://78049621027692",
+SkyboxRt="rbxassetid://97339481871314",
+SkyboxUp="rbxassetid://85412515491070"
+},
+
+["Orange"] = {
+SkyboxBk="rbxassetid://75806894209584",
+SkyboxDn="rbxassetid://88955070832523",
+SkyboxFt="rbxassetid://137588397191887",
+SkyboxLf="rbxassetid://124955584991258",
+SkyboxRt="rbxassetid://140343245463200",
+SkyboxUp="rbxassetid://134383800716949"
+},
+
+["Moonlight"] = {
+SkyboxBk="rbxassetid://116261899350523",
+SkyboxDn="rbxassetid://92257816837512",
+SkyboxFt="rbxassetid://108326981730305",
+SkyboxLf="rbxassetid://131834280163741",
+SkyboxRt="rbxassetid://99525277797873",
+SkyboxUp="rbxassetid://125425274451894"
+},
+
+["Red Sky"] = {
+SkyboxBk="rbxassetid://401664839",
+SkyboxDn="rbxassetid://401664862",
+SkyboxFt="rbxassetid://401664960",
+SkyboxLf="rbxassetid://401664881",
+SkyboxRt="rbxassetid://401664901",
+SkyboxUp="rbxassetid://401664936"
+},
+
+["Dark Void"] = {
+ SkyboxBk="rbxassetid://6285719338",
+ SkyboxDn="rbxassetid://6285721078",
+ SkyboxFt="rbxassetid://6285722964",
+ SkyboxLf="rbxassetid://6285724682",
+ SkyboxRt="rbxassetid://6285726335",
+ SkyboxUp="rbxassetid://6285730635"
+ },
+
+["Poison Sky"] = {
+SkyboxBk="rbxassetid://11941775243",
+SkyboxDn="rbxassetid://11941774975",
+SkyboxFt="rbxassetid://11941774655",
+SkyboxLf="rbxassetid://11941774369",
+SkyboxRt="rbxassetid://11941774042",
+SkyboxUp="rbxassetid://11941773718"
+},
+
+["blue night"] = {
+SkyboxBk="rbxassetid://1233158420",
+SkyboxDn="rbxassetid://1233158838",
+SkyboxFt="rbxassetid://1233157105",
+SkyboxLf="rbxassetid://1233157640",
+SkyboxRt="rbxassetid://1233157995",
+SkyboxUp="rbxassetid://1233159158"
+},
+
+["SPONGEBOB"] = {
+SkyboxBk="rbxassetid://15912530252",
+SkyboxDn="rbxassetid://15912530252",
+SkyboxFt="rbxassetid://15912530252",
+SkyboxLf="rbxassetid://15912530252",
+SkyboxRt="rbxassetid://15912530252",
+SkyboxUp="rbxassetid://15912530252"
+},
+
+["Pink"] = {
+ SkyboxBk="rbxassetid://271042516",
+ SkyboxDn="rbxassetid://271077243",
+ SkyboxFt="rbxassetid://271042556",
+ SkyboxLf="rbxassetid://271042310",
+ SkyboxRt="rbxassetid://271042467",
+ SkyboxUp="rbxassetid://271077958"
+ },
+
+["Minecraft Sky"] = {
+SkyboxBk="rbxassetid://1876545003",
+SkyboxDn="rbxassetid://1876544331",
+SkyboxFt="rbxassetid://1876542941",
+SkyboxLf="rbxassetid://1876543392",
+SkyboxRt="rbxassetid://1876543764",
+SkyboxUp="rbxassetid://1876544642"
+},
+
+["Space"] = {
+SkyboxBk="rbxassetid://166509999",
+SkyboxDn="rbxassetid://166510057",
+SkyboxFt="rbxassetid://166510116",
+SkyboxLf="rbxassetid://166510092",
+SkyboxRt="rbxassetid://166510131",
+SkyboxUp="rbxassetid://166510114"
+},
+
+["Red Matcha"] = {
+SkyboxBk="rbxassetid://108929045660200",
+SkyboxDn="rbxassetid://78646480540009",
+SkyboxFt="rbxassetid://90546017435179",
+SkyboxLf="rbxassetid://109838453114563",
+SkyboxRt="rbxassetid://94190734796082",
+SkyboxUp="rbxassetid://126944775797063"
+}
+
+}
+
+------------------------------------------------
+-- APPLY SKY
+------------------------------------------------
+
+local function ApplySky(name)
+
+local data = Skyboxes[name]
+if not data then return end
+
+local sky = Lighting:FindFirstChildOfClass("Sky") or Instance.new("Sky")
+sky.Parent = Lighting
+
+for i,v in pairs(data) do
+sky[i] = v
+end
+
+end
+
+------------------------------------------------
+-- DROPDOWN
+------------------------------------------------
+
+VisualTab:Dropdown({
+Title = "Skybox",
+
+Values = {
+"Grey",
+"Night",
+"Night V2",
+"Purple",
+"Aurora",
+"Orange",
+"Moonlight",
+"Red Sky",
+"Dark Void",
+"Poison Sky",
+"blue night",
+"SPONGEBOB",
+"Pink",
+"Minecraft Sky",
+"Space",
+"Red Matcha"
+},
+
+Callback = function(v)
+
+ApplySky(v)
+
+end
+})
+
+VisualTab:Button({
+    Title = "Remove Sky",
+    Callback = function()
+        local lighting = game:GetService("Lighting")
+
+        local sky = lighting:FindFirstChildOfClass("Sky")
+        if sky then
+            sky:Destroy()
+        end
+    end
+})
+--////////////////////////////////////////////////////
+-- MOTION BLUR
+--////////////////////////////////////////////////////
+
+local blur = Lighting:FindFirstChild("RexasBlur") or Instance.new("BlurEffect")
+blur.Name = "RexasBlur"
+blur.Parent = Lighting
+blur.Size = 0
+
+VisualTab:Toggle({
+Title = "Enable Blur",
+Callback = function(v)
+if not v then
+blur.Size = 0
+end
+end
+})
+
+VisualTab:Slider({
+Title = "Blur Strength",
+Step = 1,
+Value = {
+Min = 0,
+Max = 15,
+Default = 0
+},
+Callback = function(v)
+blur.Size = v
+end
+})
+
+--////////////////////////////////////////////////////
+-- COLOR CORRECTION
+--////////////////////////////////////////////////////
+
+local cc = Lighting:FindFirstChild("RexasCC") or Instance.new("ColorCorrectionEffect")
+cc.Parent = Lighting
+
+VisualTab:Slider({
+Title = "Saturation",
+Step = 0.1,
+Value = {
+Min = -1,
+Max = 2,
+Default = 0
+},
+Callback = function(v)
+cc.Saturation = v
+end
+})
+
+VisualTab:Slider({
+Title = "Brightness",
+Step = 0.1,
+Value = {
+Min = -2,
+Max = 3,
+Default = 0
+},
+Callback = function(v)
+cc.Brightness = v
+end
+})
+
+VisualTab:Slider({
+Title = "Contrast",
+Step = 0.1,
+Value = {
+Min = -1,
+Max = 2,
+Default = 0
+},
+Callback = function(v)
+cc.Contrast = v
+end
+})
+
+--////////////////////////////////////////////////////
+-- CLOCK TIME
+--////////////////////////////////////////////////////
+
+local CustomTime = false
+local TimeValue = 14
+
+VisualTab:Toggle({
+Title = "Custom Time",
+Callback = function(v)
+CustomTime = v
+end
+})
+
+VisualTab:Slider({
+Title = "Clock Time",
+Step = 1,
+Value = {
+Min = 0,
+Max = 24,
+Default = 14
+},
+Callback = function(v)
+TimeValue = v
+end
+})
+
+RunService.RenderStepped:Connect(function()
+
+if CustomTime then
+Lighting.ClockTime = TimeValue
+end
+
+end)
+
+--////////////////////////////////////////////////////
+-- FULLBRIGHT
+--////////////////////////////////////////////////////
+
+VisualTab:Toggle({
+Title = "FullBright",
+Callback = function(v)
+
+if v then
+Lighting.Ambient = Color3.new(1,1,1)
+Lighting.Brightness = 4
+else
+Lighting.Ambient = Color3.fromRGB(127,127,127)
+Lighting.Brightness = 2
+end
+
+end
+})
+
+--////////////////////////////////////////////////////
+-- HIGH QUALITY
+--////////////////////////////////////////////////////
+
+VisualTab:Toggle({
+Title = "High Quality",
+Callback = function(v)
+
+Lighting.GlobalShadows = v
+
+if v then
+Lighting.EnvironmentDiffuseScale = 1
+Lighting.EnvironmentSpecularScale = 1
+else
+Lighting.EnvironmentDiffuseScale = 0
+Lighting.EnvironmentSpecularScale = 0
+end
+
+end
+})
+
+--////////////////////////////////////////////////////
+-- FOV
+--////////////////////////////////////////////////////
+
+VisualTab:Slider({
+Title = "FOV",
+Step = 1,
+Value = {
+Min = 60,
+Max = 120,
+Default = 70
+},
+Callback = function(v)
+Camera.FieldOfView = v
+end
+})
+
+local CarTab = Window:Tab({
+    Title = "Car System",
+    Icon = "car"
+})
+
+local VehicleColor = Color3.fromRGB(255,0,0)
+local UnderGlowColor = Color3.fromRGB(255,0,0)
+local UnderGlowBrightness = 1
+local SelectedCarSkin = "NONE"
+local SelectedBodyColor = Color3.fromRGB(255,255,255)
+local PlateText = "REXAS"
+
+CarTab:Colorpicker({
+    Title = "Vehicle Color",
+    Default = VehicleColor,
+    Transparency = 0,
+    Callback = function(v)
+        VehicleColor = v
+    end
+})
+
+CarTab:Colorpicker({
+    Title = "Underglow Color",
+    Default = UnderGlowColor,
+    Transparency = 0,
+    Callback = function(v)
+        UnderGlowColor = v
+    end
+})
+
+CarTab:Colorpicker({
+    Title = "Body Color",
+    Default = SelectedBodyColor,
+    Transparency = 0,
+    Callback = function(color)
+        SelectedBodyColor = color
+    end
+})
+
+CarTab:Slider({
+    Title = "Underglow Brightness",
+    Step = 0.1,
+    Value = { Min = 0, Max = 5, Default = 1 },
+    Callback = function(v)
+        UnderGlowBrightness = v
+    end
+})
+
+CarTab:Dropdown({
+    Title = "Car Skin",
+    Values = {"NONE", "GOLD", "CHROME", "DIAMOND", "GALAXY", "LAVA", "ICE", "OBSIDIAN"},
+    Callback = function(v)
+        SelectedCarSkin = v
+    end
+})
+
+local function ApplyCarMaterial(part)
+    if SelectedCarSkin == "NONE" then
+        part.Color = VehicleColor
+        part.Material = Enum.Material.SmoothPlastic
+        part.Reflectance = 0.1
+    elseif SelectedCarSkin == "GOLD" then
+        part.Color = Color3.fromRGB(212,175,55)
+        part.Material = Enum.Material.Metal
+        part.Reflectance = 0.2
+    elseif SelectedCarSkin == "CHROME" then
+        part.Color = Color3.fromRGB(220,220,220)
+        part.Material = Enum.Material.Metal
+        part.Reflectance = 0.35
+    elseif SelectedCarSkin == "DIAMOND" then
+        part.Color = Color3.fromRGB(185,242,255)
+        part.Material = Enum.Material.Glass
+        part.Transparency = 0.05
+    elseif SelectedCarSkin == "GALAXY" then
+        part.Color = Color3.fromRGB(90,0,170)
+        part.Material = Enum.Material.Neon
+    elseif SelectedCarSkin == "LAVA" then
+        part.Color = Color3.fromRGB(255,80,0)
+        part.Material = Enum.Material.Neon
+    elseif SelectedCarSkin == "ICE" then
+        part.Color = Color3.fromRGB(120,220,255)
+        part.Material = Enum.Material.Glass
+    elseif SelectedCarSkin == "OBSIDIAN" then
+        part.Color = Color3.fromRGB(20,20,20)
+        part.Material = Enum.Material.Slate
+    end
+end
+
+CarTab:Button({
+    Title = "Apply Vehicle",
+    Callback = function()
+        local char = LocalPlayer.Character
+        if not char then return end
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if not hum or not hum.SeatPart then return end
+        local vehicle = hum.SeatPart:FindFirstAncestorOfClass("Model")
+        if not vehicle then return end
+
+        for _,v in pairs(vehicle:GetDescendants()) do
+            if v:IsA("BasePart") or v:IsA("MeshPart") then
+                ApplyCarMaterial(v)
+                local light = v:FindFirstChild("RexasGlow")
+                if not light then
+                    light = Instance.new("PointLight")
+                    light.Name = "RexasGlow"
+                    light.Parent = v
+                end
+                light.Color = UnderGlowColor
+                light.Range = 8
+                light.Brightness = UnderGlowBrightness
+            end
+        end
+    end
+})
+
+CarTab:Button({
+    Title = "Reset Car",
+    Callback = function()
+        local char = LocalPlayer.Character
+        if not char then return end
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if not hum or not hum.SeatPart then return end
+        local vehicle = hum.SeatPart:FindFirstAncestorOfClass("Model")
+        if not vehicle then return end
+
+        for _,v in pairs(vehicle:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.Material = Enum.Material.Plastic
+                v.Reflectance = 0
+                local glow = v:FindFirstChild("RexasGlow")
+                if glow then glow:Destroy() end
+            end
+        end
+    end
+})
+
+CarTab:Button({
+    Title = "Apply Body Color",
+    Callback = function()
+        local Character = LocalPlayer.Character
+        if not Character then return end
+        local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+        if not Humanoid or not Humanoid.SeatPart then return end
+        local Vehicle = Humanoid.SeatPart.Parent
+        
+        for _,obj in pairs(Vehicle:GetDescendants()) do
+            if obj:IsA("BasePart") or obj:IsA("MeshPart") then
+                local name = obj.Name:lower()
+                if name:find("body") or name:find("door") or name:find("hood") or name:find("trunk") or name:find("bumper") then
+                    obj.Color = SelectedBodyColor
+                    obj.Material = Enum.Material.SmoothPlastic
+                end
+            end
+        end
+        WindUI:Notify({ Title = "REXAS", Content = "Body color applied", Duration = 3 })
+    end
+})
+
+CarTab:Button({
+    Title = "Carbug",
+    Callback = function()
+        local Character = LocalPlayer.Character
+        if not Character then return end
+        local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+        if not Humanoid or not Humanoid.SeatPart then return end
+        local Vehicle = Humanoid.SeatPart:FindFirstAncestorOfClass("Model")
+        if not Vehicle then return end
+
+        for _,v in pairs(Vehicle:GetDescendants()) do
+            if v:IsA("BasePart") then
+                local n = v.Name:lower()
+                if n:find("door") or n:find("body") or n:find("hood") or n:find("trunk") then
+                    v.CanCollide = false
+                end
+            end
+        end
+        WindUI:Notify({ Title = "REXAS", Content = "Car collision disabled", Duration = 3 })
+    end
+})
+
+CarTab:Input({
+    Title = "Plate Text",
+    Placeholder = "Enter Plate",
+    Callback = function(text) if text ~= "" then PlateText = text end end
+})
+
+CarTab:Button({
+    Title = "Save Plate",
+    Callback = function()
+        if writefile then
+            writefile("rexas_plate.txt", PlateText)
+            WindUI:Notify({ Title = "REXAS", Content = "Plate Saved", Duration = 3 })
+        end
+    end
+})
+
+task.spawn(function()
+    while task.wait(1) do
+        local Character = LocalPlayer.Character
+        if not Character then continue end
+        local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+        if not Humanoid or not Humanoid.SeatPart then continue end
+        local Vehicle = Humanoid.SeatPart.Parent
+        local Plates = Vehicle:FindFirstChild("LicensePlates", true)
+        if not Plates then continue end
+        for _,obj in pairs(Plates:GetDescendants()) do
+            if obj:IsA("TextLabel") then
+                obj.Text = PlateText
+                obj.TextScaled = true
+                obj.Font = Enum.Font.GothamBold
+                obj.TextColor3 = Color3.fromRGB(0,0,0)
+            end
+        end
+    end
+end)
+local WeaponTab = Window:Tab({
+    Title = "Weapon Skins",
+    Icon = "sword"
+})
+
+local function ApplyWeaponSkin(tool)
+    if not tool then return end
+    
+    for _, obj in pairs(tool:GetDescendants()) do
+        if obj:IsA("BasePart") then
+            pcall(function()
+                obj.Color = WeaponColor
+                obj.Material = WeaponMaterial
+                obj.Reflectance = 0
+            end)
+        elseif obj:IsA("SpecialMesh") then
+            pcall(function()
+                obj.VertexColor = Vector3.new(WeaponColor.R, WeaponColor.G, WeaponColor.B)
+            end)
+        elseif obj:IsA("Texture") or obj:IsA("Decal") then
+            pcall(function() 
+                obj:Destroy() 
+            end)
+        end
+    end
+end
+
+local function UpdateAllWeapons()
+    local char = LocalPlayer.Character
+    if char then
+        for _, tool in pairs(char:GetChildren()) do
+            if tool:IsA("Tool") then ApplyWeaponSkin(tool) end
+        end
+    end
+    
+    local backpack = LocalPlayer:FindFirstChildOfClass("Backpack")
+    if backpack then
+        for _, tool in pairs(backpack:GetChildren()) do
+            if tool:IsA("Tool") then ApplyWeaponSkin(tool) end
+        end
+    end
+end
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    char.ChildAdded:Connect(function(child)
+        if child:IsA("Tool") then
+            task.wait(0.1)
+            ApplyWeaponSkin(child)
+        end
+    end)
+end)
+
+if LocalPlayer.Character then
+    LocalPlayer.Character.ChildAdded:Connect(function(child)
+        if child:IsA("Tool") then
+            task.wait(0.1)
+            ApplyWeaponSkin(child)
+        end
+    end)
+end
+
+local backpack = LocalPlayer:WaitForChild("Backpack", 5)
+if backpack then
+    backpack.ChildAdded:Connect(function(child)
+        if child:IsA("Tool") then
+            task.wait(0.1)
+            ApplyWeaponSkin(child)
+        end
+    end)
+end
+
+WeaponTab:Colorpicker({
+    Title = "Weapon Color",
+    Default = WeaponColor,
+    Transparency = 0,
+    Callback = function(v)
+        WeaponColor = v
+        UpdateAllWeapons()
+    end
+})
+
+WeaponTab:Dropdown({
+    Title = "Weapon Material",
+    Values = {"Neon", "Metal", "ForceField", "Plastic", "Glass"},
+    Default = "Neon",
+    Callback = function(v)
+        WeaponMaterial = Enum.Material[v]
+        UpdateAllWeapons()
+    end
+})
+
+WeaponTab:Button({
+    Title = "Apply Weapon Skin (Manual)",
+    Callback = function()
+        UpdateAllWeapons()
+    end
+})
+--////////////////////////////////////////////////////
+-- OG SNIPER
+--////////////////////////////////////////////////////
+
+local OgSniper = false
+local NoSmooth = false
+
+------------------------------------------------
+-- ENABLE OG SNIPER
+------------------------------------------------
+
+SniperTab:Toggle({
+    Title = "Enable OG Sniper",
+
+    Callback = function(v)
+
+        OgSniper = v
+
+        if not v then
+            Camera.FieldOfView = 70
+        end
+    end
+})
+
+------------------------------------------------
+-- NO SMOOTHNESS BUTTON
+------------------------------------------------
+
+SniperTab:Button({
+    Title = "No Smoothness",
+
+    Callback = function()
+
+        NoSmooth = not NoSmooth
+
+        if NoSmooth then
+
+            WindUI:Notify({
+                Title = "OG Sniper",
+                Content = "No Smoothness Enabled",
+                Duration = 2
+            })
+
+        else
+
+            WindUI:Notify({
+                Title = "OG Sniper",
+                Content = "No Smoothness Disabled",
+                Duration = 2
+            })
+
+        end
+    end
+})
+
+------------------------------------------------
+-- SETTINGS
+------------------------------------------------
+
+local defaultFOV = 60
+local zoomFOV = 25
+local zoomSmoothness = 0.00
+
+------------------------------------------------
+-- REMOVE SCOPE
+------------------------------------------------
+
+RunService.Heartbeat:Connect(function()
+
+    local c = LocalPlayer.Character
+    if not c then return end
+
+    for _,t in pairs(c:GetChildren()) do
+
+        if t:IsA("Tool") then
+
+            if OgSniper then
+
+                pcall(function()
+
+                    t:SetAttribute("Scope", false)
+                    t:SetAttribute("HasScope", false)
+                    t:SetAttribute("AimDelay", 0)
+
+                end)
+
+                local sc =
+                    t:FindFirstChild("Scope")
+                    or t:FindFirstChild("Zielfernrohr")
+
+                if sc then
+
+                    for _,p in pairs(sc:GetDescendants()) do
+
+                        if p:IsA("BasePart") then
+
+                            p.LocalTransparencyModifier = 1
+
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+------------------------------------------------
+-- FOV SYSTEM
+------------------------------------------------
+
+RunService.RenderStepped:Connect(function()
+
+    local c = LocalPlayer.Character
+    if not c then return end
+
+    if not OgSniper then return end
+
+    local currentTool = c:FindFirstChildOfClass("Tool")
+    if not currentTool then return end
+
+    if not currentTool.Name:lower():find("sniper") then
+        return
+    end
+
+    local aiming =
+        UIS:IsMouseButtonPressed(
+            Enum.UserInputType.MouseButton2
+        )
+
+    ------------------------------------------------
+    -- NO SMOOTH
+    ------------------------------------------------
+
+    if NoSmooth then
+
+        if aiming then
+
+            Camera.FieldOfView = zoomFOV
+
+        else
+
+            Camera.FieldOfView = defaultFOV
+
+        end
+
+    ------------------------------------------------
+    -- SMOOTH
+    ------------------------------------------------
+
+    else
+
+        if aiming then
+
+            Camera.FieldOfView =
+                Camera.FieldOfView +
+                ((zoomFOV - Camera.FieldOfView)
+                * zoomSmoothness)
+
+        else
+
+            Camera.FieldOfView =
+                Camera.FieldOfView +
+                ((defaultFOV - Camera.FieldOfView)
+                * zoomSmoothness)
+
+        end
+    end
+end)
+--////////////////////////////////////////////////////
+-- SKIN CHANGER
+--////////////////////////////////////////////////////
+
+local SelectedPlayer = nil
+local UsernameSkin = ""
+
+------------------------------------------------
+-- GET PLAYER NAMES
+------------------------------------------------
+
+local function GetPlayerNames()
+
+    local t = {}
+
+    for _,plr in pairs(Players:GetPlayers()) do
+
+        if plr ~= LocalPlayer then
+            table.insert(t, plr.Name)
+        end
+    end
+
+    return t
+end
+
+------------------------------------------------
+-- PLAYER SELECT
+------------------------------------------------
+
+SkinChangerTab:Dropdown({
+    Title = "Select Player",
+    Values = GetPlayerNames(),
+
+    Callback = function(v)
+
+        SelectedPlayer = Players:FindFirstChild(v)
+
+    end
+})
+
+------------------------------------------------
+-- USERNAME INPUT
+------------------------------------------------
+
+SkinChangerTab:Input({
+    Title = "Username Skin",
+    Placeholder = "Enter Username",
+
+    Callback = function(v)
+
+        UsernameSkin = v
+
+    end
+})
+
+------------------------------------------------
+-- REMOVE OLD STUFF
+------------------------------------------------
+
+local function RemoveOldStuff(char)
+
+    for _,v in pairs(char:GetChildren()) do
+
+        if v:IsA("Accessory")
+        or v:IsA("Hat")
+        or v:IsA("Shirt")
+        or v:IsA("Pants")
+        or v:IsA("ShirtGraphic")
+        or v:IsA("BodyColors") then
+
+            v:Destroy()
+
+        end
+    end
+end
+
+------------------------------------------------
+-- COPY CLOTHES
+------------------------------------------------
+
+local function CopyClothes(targetChar, char)
+
+    for _,v in pairs(targetChar:GetChildren()) do
+
+        if v:IsA("Shirt")
+        or v:IsA("Pants")
+        or v:IsA("ShirtGraphic")
+        or v:IsA("BodyColors") then
+
+            local clone = v:Clone()
+            clone.Parent = char
+
+        end
+    end
+end
+
+------------------------------------------------
+-- COPY FACE
+------------------------------------------------
+
+local function CopyFace(targetChar, char)
+
+    local targetHead = targetChar:FindFirstChild("Head")
+    local localHead = char:FindFirstChild("Head")
+
+    if targetHead and localHead then
+
+        for _,v in pairs(localHead:GetChildren()) do
+
+            if v:IsA("Decal") then
+                v:Destroy()
+            end
+        end
+
+        for _,v in pairs(targetHead:GetChildren()) do
+
+            if v:IsA("Decal") then
+
+                local clone = v:Clone()
+                clone.Parent = localHead
+
+            end
+        end
+    end
+end
+
+------------------------------------------------
+-- COPY ACCESSORIES
+------------------------------------------------
+
+local function CopyAccessories(targetChar, char)
+
+    for _,acc in pairs(targetChar:GetChildren()) do
+
+        if acc:IsA("Accessory") then
+
+            local cloned = acc:Clone()
+            cloned.Parent = char
+
+            local handle = cloned:FindFirstChild("Handle")
+
+            if handle then
+
+                ------------------------------------------------
+                -- FIX PHYSICS
+                ------------------------------------------------
+
+                handle.Anchored = false
+                handle.CanCollide = false
+                handle.Massless = true
+
+                ------------------------------------------------
+                -- REMOVE OLD WELDS
+                ------------------------------------------------
+
+                for _,v in pairs(handle:GetChildren()) do
+
+                    if v:IsA("Weld")
+                    or v:IsA("Motor6D")
+                    or v:IsA("AccessoryWeld")
+                    or v:IsA("WeldConstraint") then
+
+                        v:Destroy()
+
+                    end
+                end
+
+                ------------------------------------------------
+                -- FIND ATTACHMENT
+                ------------------------------------------------
+
+                local attachment =
+                    handle:FindFirstChildOfClass("Attachment")
+
+                if attachment then
+
+                    for _,part in pairs(char:GetDescendants()) do
+
+                        if part:IsA("BasePart") then
+
+                            local charAttachment =
+                                part:FindFirstChild(
+                                    attachment.Name,
+                                    true
+                                )
+
+                            if charAttachment then
+
+                                ------------------------------------------------
+                                -- POSITION
+                                ------------------------------------------------
+
+                                handle.CFrame =
+                                    charAttachment.WorldCFrame
+                                    * attachment.CFrame:Inverse()
+
+                                ------------------------------------------------
+                                -- CREATE WELD
+                                ------------------------------------------------
+
+                                local weld =
+                                    Instance.new("Weld")
+
+                                weld.Part0 = handle
+                                weld.Part1 = part
+                                weld.C0 = attachment.CFrame
+                                weld.C1 = charAttachment.CFrame
+                                weld.Parent = handle
+
+                                break
+                            end
+                        end
+                    end
+                else
+
+                    ------------------------------------------------
+                    -- FALLBACK HEAD
+                    ------------------------------------------------
+
+                    local head = char:FindFirstChild("Head")
+
+                    if head then
+
+                        handle.CFrame = head.CFrame
+
+                        local weld =
+                            Instance.new("WeldConstraint")
+
+                        weld.Part0 = handle
+                        weld.Part1 = head
+                        weld.Parent = handle
+
+                    end
+                end
+            end
+        end
+    end
+end
+
+------------------------------------------------
+-- MAIN COPY
+------------------------------------------------
+
+local function CopyCharacterAppearance(targetChar)
+
+    local char = LocalPlayer.Character
+    if not char then return end
+
+    RemoveOldStuff(char)
+
+    CopyClothes(targetChar, char)
+
+    CopyFace(targetChar, char)
+
+    CopyAccessories(targetChar, char)
+
+end
+------------------------------------------------
+-- SAVE / LOAD SKIN
+------------------------------------------------
+
+local SavedSkin = nil
+
+local function SaveCurrentSkin()
+    local char = LocalPlayer.Character
+    if not char then return end
+
+    if SavedSkin then
+        SavedSkin:Destroy()
+    end
+
+    SavedSkin = Instance.new("Folder")
+
+    for _,v in pairs(char:GetChildren()) do
+        if v:IsA("Accessory")
+        or v:IsA("Shirt")
+        or v:IsA("Pants")
+        or v:IsA("ShirtGraphic")
+        or v:IsA("BodyColors") then
+            v:Clone().Parent = SavedSkin
+        end
+    end
+
+    local head = char:FindFirstChild("Head")
+
+    if head then
+        local faceFolder = Instance.new("Folder")
+        faceFolder.Name = "Face"
+
+        for _,v in pairs(head:GetChildren()) do
+            if v:IsA("Decal") then
+                v:Clone().Parent = faceFolder
+            end
+        end
+
+        faceFolder.Parent = SavedSkin
+    end
+end
+
+local function LoadSavedSkin()
+    if not SavedSkin then return end
+
+    local char = LocalPlayer.Character
+    if not char then return end
+
+    RemoveOldStuff(char)
+
+    local head = char:FindFirstChild("Head")
+
+    if head then
+        for _,v in pairs(head:GetChildren()) do
+            if v:IsA("Decal") then
+                v:Destroy()
+            end
+        end
+    end
+
+    for _,v in pairs(SavedSkin:GetChildren()) do
+
+        if v.Name == "Face" then
+
+            if head then
+                for _,face in pairs(v:GetChildren()) do
+                    face:Clone().Parent = head
+                end
+            end
+
+        else
+            v:Clone().Parent = char
+        end
+    end
+end
+
+------------------------------------------------
+-- COPY PLAYER SKIN
+------------------------------------------------
+
+SkinChangerTab:Button({
+    Title = "Copy Player Skin",
+
+    Callback = function()
+
+        if not SelectedPlayer then return end
+        if not SelectedPlayer.Character then return end
+
+        CopyCharacterAppearance(
+            SelectedPlayer.Character
+        )
+
+    end
+})
+------------------------------------------------
+-- SAVE CURRENT SKIN
+------------------------------------------------
+
+SkinChangerTab:Button({
+    Title = "Save Current Skin",
+
+    Callback = function()
+        SaveCurrentSkin()
+    end
+})
+
+------------------------------------------------
+-- LOAD SAVED SKIN
+------------------------------------------------
+
+SkinChangerTab:Button({
+    Title = "Load Saved Skin",
+
+    Callback = function()
+        LoadSavedSkin()
+    end
+})
+------------------------------------------------
+-- COPY USERNAME SKIN
+------------------------------------------------
+
+SkinChangerTab:Button({
+    Title = "Copy Username Skin",
+
+    Callback = function()
+
+        if UsernameSkin == "" then
+            return
+        end
+
+        local success, userId = pcall(function()
+
+            return Players:GetUserIdFromNameAsync(
+                UsernameSkin
+            )
+
+        end)
+
+        if not success then
+            return
+        end
+
+        local success2, model = pcall(function()
+
+            return Players:CreateHumanoidModelFromUserId(
+                userId
+            )
+
+        end)
+
+        if success2 and model then
+
+            CopyCharacterAppearance(model)
+
+            model:Destroy()
+
+        end
+    end
+})
+
+------------------------------------------------
+-- REFRESH PLAYERS
+------------------------------------------------
+
+SkinChangerTab:Button({
+    Title = "Refresh Players",
+
+    Callback = function()
+
+    end
+})
+--////////////////////////////////////////////////////
+-- EMOTES TAB
+--////////////////////////////////////////////////////
+
+local EmoteAnimations = {
+
+    ["Jerk"] = "rbxassetid://108177910567861",
+    ["Fake Cuffed"] = "rbxassetid://117316258600620",
+    ["Emergency Hamburg"] = "rbxassetid://129911640303259",
+    ["Sit Vibing"] = "rbxassetid://89068086839142",
+    ["Cool Dance"] = "rbxassetid://133545170540942",
+
+    ["Zombie"] = "rbxassetid://616158929",
+    ["Ninja Dance"] = "rbxassetid://656118852",
+    ["Shuffle"] = "rbxassetid://9840397850",
+    ["Robot"] = "rbxassetid://616088211",
+    ["Stylish"] = "rbxassetid://616136790",
+    ["Dab"] = "rbxassetid://248263260",
+    ["Floss"] = "rbxassetid://5917459365",
+    ["Lean"] = "rbxassetid://3152375249"
+}
+
+local CurrentEmoteTrack = nil
+local SelectedEmote = "Jerk"
+
+------------------------------------------------
+-- STOP EMOTE
+------------------------------------------------
+
+local function StopEmote()
+
+    if CurrentEmoteTrack then
+
+        CurrentEmoteTrack:Stop()
+        CurrentEmoteTrack:Destroy()
+        CurrentEmoteTrack = nil
+
+    end
+end
+
+------------------------------------------------
+-- PLAY EMOTE
+------------------------------------------------
+
+local function PlayEmote(animId)
+
+    local char = LocalPlayer.Character
+    if not char then return end
+
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
+
+    StopEmote()
+
+    local anim = Instance.new("Animation")
+    anim.AnimationId = animId
+
+    local success, track = pcall(function()
+
+        return hum:LoadAnimation(anim)
+
+    end)
+
+    if success and track then
+
+        CurrentEmoteTrack = track
+        track.Looped = true
+
+        pcall(function()
+
+            track.Priority = Enum.AnimationPriority.Action
+
+        end)
+
+        track:Play(0.15,1,1)
+
+    end
+end
+
+------------------------------------------------
+-- DROPDOWN
+------------------------------------------------
+
+local EmoteNames = {}
+
+for name,_ in pairs(EmoteAnimations) do
+
+    table.insert(EmoteNames,name)
+
+end
+
+EmoteTab:Dropdown({
+    Title = "Select Emote",
+    Values = EmoteNames,
+
+    Callback = function(v)
+
+        SelectedEmote = v
+
+    end
+})
+
+------------------------------------------------
+-- PLAY BUTTON
+------------------------------------------------
+
+EmoteTab:Button({
+    Title = "Play Emote",
+
+    Callback = function()
+
+        local animId = EmoteAnimations[SelectedEmote]
+
+        if animId then
+
+            PlayEmote(animId)
+
+        end
+    end
+})
+
+------------------------------------------------
+-- STOP BUTTON
+------------------------------------------------
+
+EmoteTab:Button({
+    Title = "Stop Emote",
+
+    Callback = function()
+
+        StopEmote()
+
+    end
+})
+
+------------------------------------------------
+-- AUTO RESET FIX
+------------------------------------------------
+
+LocalPlayer.CharacterAdded:Connect(function()
+
+    task.wait(2)
+
+    StopEmote()
+
+end)
+--////////////////////////////////////////////////////
+-- CROSSHAIR SYSTEM
+--////////////////////////////////////////////////////
+
+local CrosshairEnabled = false
+local CrosshairType = "DOT"
+local CrosshairColor = Color3.new(1,1,1)
+
+------------------------------------------------
+-- GUI
+------------------------------------------------
+
+local CrosshairGui = Instance.new("ScreenGui")
+CrosshairGui.Name = "RexasCrosshair"
+CrosshairGui.ResetOnSpawn = false
+CrosshairGui.IgnoreGuiInset = true
+CrosshairGui.Parent = game.CoreGui
+
+local Holder = Instance.new("Frame")
+Holder.Parent = CrosshairGui
+Holder.AnchorPoint = Vector2.new(0.5,0.5)
+Holder.Position = UDim2.new(0.5,0,0.5,0)
+Holder.Size = UDim2.new(0,0,0,0)
+Holder.BackgroundTransparency = 1
+
+------------------------------------------------
+-- REMOVE GAME CROSSHAIR
+------------------------------------------------
+
+local function RemoveGameCrosshair()
+
+    pcall(function()
+
+        LocalPlayer:GetMouse().Icon = "rbxassetid://0"
+
+    end)
+
+end
+
+------------------------------------------------
+-- CLEAR
+------------------------------------------------
+
+local function ClearCrosshair()
+
+    for _,v in pairs(Holder:GetChildren()) do
+        v:Destroy()
+    end
+
+end
+
+------------------------------------------------
+-- CREATE LINE
+------------------------------------------------
+
+local function CreateLine(x,y,w,h,rot)
+
+    local line = Instance.new("Frame")
+    line.Parent = Holder
+    line.BorderSizePixel = 0
+    line.BackgroundColor3 = CrosshairColor
+    line.Position = UDim2.new(0,x,0,y)
+    line.Size = UDim2.new(0,w,0,h)
+    line.Rotation = rot or 0
+
+    return line
+
+end
+
+------------------------------------------------
+-- BUILD
+------------------------------------------------
+
+local function BuildCrosshair()
+
+    ClearCrosshair()
+
+    if not CrosshairEnabled then
+        return
+    end
+
+    RemoveGameCrosshair()
+
+    ------------------------------------------------
+    -- DOT
+    ------------------------------------------------
+
+    if CrosshairType == "DOT" then
+
+        local dot = Instance.new("Frame")
+        dot.Parent = Holder
+        dot.Size = UDim2.new(0,6,0,6)
+        dot.Position = UDim2.new(0,-3,0,-3)
+        dot.BorderSizePixel = 0
+        dot.BackgroundColor3 = CrosshairColor
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(1,0)
+        corner.Parent = dot
+
+    ------------------------------------------------
+    -- CROSS
+    ------------------------------------------------
+
+    elseif CrosshairType == "CROSS" then
+
+        CreateLine(-18,-1,14,2)
+        CreateLine(4,-1,14,2)
+
+        CreateLine(-1,-18,2,14)
+        CreateLine(-1,4,2,14)
+
+    ------------------------------------------------
+    -- X
+    ------------------------------------------------
+
+    elseif CrosshairType == "X" then
+
+        CreateLine(-12,-1,24,2,45)
+        CreateLine(-12,-1,24,2,-45)
+
+    ------------------------------------------------
+    -- CIRCLE
+    ------------------------------------------------
+
+    elseif CrosshairType == "CIRCLE" then
+
+        local circle = Instance.new("Frame")
+        circle.Parent = Holder
+        circle.Size = UDim2.new(0,22,0,22)
+        circle.Position = UDim2.new(0,-11,0,-11)
+        circle.BackgroundTransparency = 1
+        circle.BorderSizePixel = 2
+        circle.BorderColor3 = CrosshairColor
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(1,0)
+        corner.Parent = circle
+
+    ------------------------------------------------
+    -- STAR
+    ------------------------------------------------
+
+    elseif CrosshairType == "STAR" then
+
+        CreateLine(-20,-1,16,2)
+        CreateLine(4,-1,16,2)
+
+        CreateLine(-1,-20,2,16)
+        CreateLine(-1,4,2,16)
+
+        CreateLine(-14,-1,28,2,45)
+        CreateLine(-14,-1,28,2,-45)
+
+    ------------------------------------------------
+    -- SNIPER
+    ------------------------------------------------
+
+    elseif CrosshairType == "SNIPER" then
+
+        CreateLine(-60,-1,50,2)
+        CreateLine(10,-1,50,2)
+
+        CreateLine(-1,-60,2,50)
+        CreateLine(-1,10,2,50)
+
+        local circle = Instance.new("Frame")
+        circle.Parent = Holder
+        circle.Size = UDim2.new(0,70,0,70)
+        circle.Position = UDim2.new(0,-35,0,-35)
+        circle.BackgroundTransparency = 1
+        circle.BorderSizePixel = 2
+        circle.BorderColor3 = CrosshairColor
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(1,0)
+        corner.Parent = circle
+
+    ------------------------------------------------
+    -- BOX
+    ------------------------------------------------
+
+    elseif CrosshairType == "BOX" then
+
+        local box = Instance.new("Frame")
+        box.Parent = Holder
+        box.Size = UDim2.new(0,24,0,24)
+        box.Position = UDim2.new(0,-12,0,-12)
+        box.BackgroundTransparency = 1
+        box.BorderSizePixel = 2
+        box.BorderColor3 = CrosshairColor
+
+    ------------------------------------------------
+    -- SMALL CROSS
+    ------------------------------------------------
+
+    elseif CrosshairType == "SMALL CROSS" then
+
+        CreateLine(-10,-1,6,2)
+        CreateLine(4,-1,6,2)
+
+        CreateLine(-1,-10,2,6)
+        CreateLine(-1,4,2,6)
+
+    ------------------------------------------------
+    -- BIG DOT
+    ------------------------------------------------
+
+    elseif CrosshairType == "BIG DOT" then
+
+        local dot = Instance.new("Frame")
+        dot.Parent = Holder
+        dot.Size = UDim2.new(0,12,0,12)
+        dot.Position = UDim2.new(0,-6,0,-6)
+        dot.BorderSizePixel = 0
+        dot.BackgroundColor3 = CrosshairColor
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(1,0)
+        corner.Parent = dot
+
+    ------------------------------------------------
+    -- T SHAPE
+    ------------------------------------------------
+
+    elseif CrosshairType == "T SHAPE" then
+
+        CreateLine(-18,-1,14,2)
+        CreateLine(4,-1,14,2)
+
+        CreateLine(-1,4,2,14)
+
+    end
+end
+
+------------------------------------------------
+-- TOGGLE
+------------------------------------------------
+
+CrosshairTab:Toggle({
+    Title = "Enable Crosshair",
+
+    Callback = function(v)
+
+        CrosshairEnabled = v
+        BuildCrosshair()
+
+    end
+})
+
+------------------------------------------------
+-- DROPDOWN
+------------------------------------------------
+
+CrosshairTab:Dropdown({
+    Title = "Crosshair Model",
+
+    Values = {
+        "DOT",
+        "BIG DOT",
+        "CROSS",
+        "SMALL CROSS",
+        "X",
+        "CIRCLE",
+        "STAR",
+        "SNIPER",
+        "BOX",
+        "T SHAPE"
+    },
+
+    Callback = function(v)
+
+        CrosshairType = v
+        BuildCrosshair()
+
+    end
+})
+
+------------------------------------------------
+-- COLOR
+------------------------------------------------
+
+CrosshairTab:Colorpicker({
+    Title = "Crosshair Color",
+    Default = Color3.new(1,1,1),
+
+    Callback = function(v)
+
+        CrosshairColor = v
+        BuildCrosshair()
+
+    end
+})
+
+------------------------------------------------
+-- REMOVE ROBLOX CURSOR
+------------------------------------------------
+
+RunService.RenderStepped:Connect(function()
+
+    if CrosshairEnabled then
+
+        pcall(function()
+
+            LocalPlayer:GetMouse().Icon = "rbxassetid://0"
+
+        end)
+
+    end
+end)
+--////////////////////////////////////////////////////
+-- CRIME GEAR SKINS
+--////////////////////////////////////////////////////
+
+local SelectedSkin = "REALISTIC GOLD"
+
+SkinTab:Dropdown({
+Title = "Crime Gear Skin",
+Values = {
+"REALISTIC GOLD",
+"CHROME",
+"DIAMOND",
+"RUBY",
+"EMERALD",
+"BLACK ICE",
+"GALAXY",
+"OBSIDIAN"
+},
+Callback = function(v)
+SelectedSkin = v
+end
+})
+
+local function applyMaterial(part)
+
+if SelectedSkin == "REALISTIC GOLD" then
+
+part.Color = Color3.fromRGB(212,175,55)
+part.Material = Enum.Material.Metal
+part.Reflectance = 0.15
+
+elseif SelectedSkin == "CHROME" then
+
+part.Color = Color3.fromRGB(220,220,220)
+part.Material = Enum.Material.Metal
+part.Reflectance = 0.3
+
+elseif SelectedSkin == "DIAMOND" then
+
+part.Color = Color3.fromRGB(185,242,255)
+part.Material = Enum.Material.Glass
+part.Transparency = 0.08
+part.Reflectance = 0.1
+
+elseif SelectedSkin == "RUBY" then
+
+part.Color = Color3.fromRGB(170,0,0)
+part.Material = Enum.Material.Neon
+
+elseif SelectedSkin == "EMERALD" then
+
+part.Color = Color3.fromRGB(0,170,100)
+part.Material = Enum.Material.Neon
+
+elseif SelectedSkin == "BLACK ICE" then
+
+part.Color = Color3.fromRGB(40,40,50)
+part.Material = Enum.Material.Glass
+part.Transparency = 0.05
+
+elseif SelectedSkin == "GALAXY" then
+
+part.Color = Color3.fromRGB(90,0,170)
+part.Material = Enum.Material.Neon
+
+elseif SelectedSkin == "OBSIDIAN" then
+
+part.Color = Color3.fromRGB(15,15,15)
+part.Material = Enum.Material.Slate
+end
+
+end
+
+SkinTab:Button({
+Title = "Apply Crime Gear",
+Callback = function()
+
+local char = LocalPlayer.Character
+if not char then return end
+
+for _,v in pairs(char:GetDescendants()) do
+
+if v:IsA("MeshPart") then
+
+pcall(function()
+
+if v.TextureID == "rbxassetid://17712967030"
+or v.TextureID == "rbxassetid://17712965665" then
+
+v.TextureID = ""
+applyMaterial(v)
+
+end
+
+end)
+
+end
+
+if v:IsA("BasePart") then
+
+local n = v.Name:lower()
+
+if n:find("vest")
+or n:find("armor")
+or n:find("schutz")
+or n:find("gear")
+or n:find("crime") then
+
+applyMaterial(v)
+
+end
+
+end
+
+if v:IsA("Texture") or v:IsA("Decal") then
+pcall(function()
+v:Destroy()
+end)
+end
+
+if v:IsA("SpecialMesh") then
+
+if SelectedSkin == "REALISTIC GOLD" then
+v.VertexColor = Vector3.new(1,0.84,0)
+
+elseif SelectedSkin == "CHROME" then
+v.VertexColor = Vector3.new(0.9,0.9,0.9)
+
+elseif SelectedSkin == "DIAMOND" then
+v.VertexColor = Vector3.new(0.7,1,1)
+
+elseif SelectedSkin == "RUBY" then
+v.VertexColor = Vector3.new(1,0,0)
+
+elseif SelectedSkin == "EMERALD" then
+v.VertexColor = Vector3.new(0,1,0.5)
+
+elseif SelectedSkin == "BLACK ICE" then
+v.VertexColor = Vector3.new(0.2,0.2,0.25)
+
+elseif SelectedSkin == "GALAXY" then
+v.VertexColor = Vector3.new(0.5,0,1)
+
+elseif SelectedSkin == "OBSIDIAN" then
+v.VertexColor = Vector3.new(0.1,0.1,0.1)
+end
+
+end
+end
+
+end
+})
+--////////////////////////////////////////////////////
+-- SOUND
+--////////////////////////////////////////////////////
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local ChillSongs = {
+    ["Tokyo Drift"] = "rbxassetid://1843523203",
+    ["Phonk"] = "rbxassetid://9048375035",
+    ["Chill"] = "rbxassetid://1837467331"
+}
+
+local Song = Instance.new("Sound")
+Song.Name = "RexasMusic"
+Song.Parent = workspace
+Song.Volume = 2
+Song.Looped = true
+
+------------------------------------------------
+-- MUSIC DROPDOWN
+------------------------------------------------
+
+SoundTab:Dropdown({
+    Title = "Chill Songs",
+
+    Values = {
+        "Tokyo Drift",
+        "Phonk",
+        "Chill"
+    },
+
+    Callback = function(v)
+
+        Song.SoundId = ChillSongs[v]
+        Song:Play()
+
+    end
+})
+
+------------------------------------------------
+-- STOP MUSIC
+------------------------------------------------
+
+SoundTab:Button({
+    Title = "Stop Music",
+
+    Callback = function()
+
+        Song:Stop()
+
+    end
+})
+
+SoundTab:Toggle({
+    Title = "Mute Helicopter",
+
+    Callback = function(state)
+
+        for _,obj in pairs(workspace:GetDescendants()) do
+
+            if obj:IsA("Sound") then
+
+                local fullname =
+                    string.lower(obj:GetFullName())
+
+                if string.find(fullname,"helicopter")
+                or string.find(fullname,"heli")
+                or string.find(fullname,"rotor") then
+
+                    if state then
+                        obj.Volume = 0
+                    else
+                        obj.Volume = 1
+                    end
+                end
+            end
+        end
+    end
+})
+
+SoundTab:Toggle({
+    Title = "Disable Helicopter Spotlight",
+
+    Callback = function(state)
+
+        for _,obj in pairs(workspace:GetDescendants()) do
+
+            if obj.Name == "Spotlight" then
+
+                for _,light in pairs(obj:GetDescendants()) do
+
+                    if light:IsA("SpotLight")
+                    or light:IsA("PointLight")
+                    or light:IsA("SurfaceLight") then
+
+                        light.Enabled = not state
+
+                    end
+                end
+            end
+        end
+    end
+})
+--////////////////////////////////////////////////////
+-- CAPE
+--////////////////////////////////////////////////////
+local healthSystemEnabled = false
+local espEnabled = false
+local healthColorValue = Color3.fromRGB(0, 255, 100)
+local espColorValue = Color3.fromRGB(255, 0, 0)
+
+-- TABELLE ZUM SPEICHERN DER DRAWING-OBJEKTE
+local playerDrawings = {}
+
+------------------------------------------------
+-- HEALTH SYSTEM
+------------------------------------------------
+PlayerTab:Toggle({
+    Title = "Health System",
+    Desc = "Show custom health UI",
+
+    Callback = function(v)
+        healthSystemEnabled = v
+        print("Health System:", v)
+    end
+})
+
+------------------------------------------------
+-- ESP
+------------------------------------------------
+PlayerTab:Toggle({
+    Title = "ESP",
+    Desc = "Highlight players",
+
+    Callback = function(v)
+        espEnabled = v
+        print("ESP:", v)
+        
+        -- Wenn ESP deaktiviert wird, lösche alle Zeichnungen
+        if not v then
+            for _, drawing in pairs(playerDrawings) do
+                for _, obj in pairs(drawing) do
+                    obj:Remove()
+                end
+            end
+            playerDrawings = {}
+        end
+    end
+})
+
+------------------------------------------------
+-- HEALTH COLOR
+------------------------------------------------
+PlayerTab:Colorpicker({
+    Title = "Health Color",
+    Default = Color3.fromRGB(0,255,100),
+
+    Callback = function(color)
+        healthColorValue = color
+        print("Health Color:", color)
+    end
+})
+
+------------------------------------------------
+-- ESP COLOR
+------------------------------------------------
+PlayerTab:Colorpicker({
+    Title = "ESP Color",
+    Default = Color3.fromRGB(255,0,0),
+
+    Callback = function(color)
+        espColorValue = color
+        print("ESP Color:", color)
+    end
+})
+
+
+------------------------------------------------
+-- RENDER-LOGIK (DAS HERZSTÜCK DES ESP)
+------------------------------------------------
+local function setupDrawingsForPlayer(player)
+    if not playerDrawings[player] then
+        playerDrawings[player] = {
+            box = Drawing.new("Square"),
+            healthBar = Drawing.new("Square"),
+            healthBarBg = Drawing.new("Square"),
+            healingText = Drawing.new("Text")
+        }
+    end
+    
+    local drawings = playerDrawings[player]
+    
+    -- Standard-Eigenschaften setzen
+    drawings.box.Thickness = 1
+    drawings.box.Filled = false
+    drawings.box.Transparency = 1
+    
+    drawings.healthBar.Filled = true
+    drawings.healthBar.Transparency = 1
+    
+    drawings.healthBarBg.Filled = true
+    drawings.healthBarBg.Color = Color3.new(0, 0, 0) -- Schwarzer Hintergrund
+    drawings.healthBarBg.Transparency = 0.5
+    
+    drawings.healingText.Size = 13
+    drawings.healingText.Center = true
+    drawings.healingText.Outline = true
+    drawings.healingText.Font = Drawing.Fonts.UI
+end
+
+local function removeDrawingsForPlayer(player)
+    if playerDrawings[player] then
+        for _, obj in pairs(playerDrawings[player]) do
+            obj:Remove()
+        end
+        playerDrawings[player] = nil
+    end
+end
+
+local function updateESP()
+    if not espEnabled then return end
+    
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player == LocalPlayer then continue end
+        
+        local character = player.Character
+        if not character or not character:FindFirstChild("Humanoid") or not character:FindFirstChild("HumanoidRootPart") then
+            removeDrawingsForPlayer(player)
+            continue
+        end
+        
+        local humanoid = character.Humanoid
+        local humanoidRootPart = character.HumanoidRootPart
+        
+        -- Position auf dem Bildschirm berechnen
+        local position, onScreen = Camera:WorldToViewportPoint(humanoidRootPart.Position)
+        if not onScreen then
+            removeDrawingsForPlayer(player)
+            continue
+        end
+        
+        -- Zeichnungen erstellen, falls sie nicht existieren
+        setupDrawingsForPlayer(player)
+        local drawings = playerDrawings[player]
+        
+        -- Box-Größe berechnen (basierend auf der Entfernung)
+        local distance = (LocalPlayer.Character.HumanoidRootPart.Position - humanoidRootPart.Position).Magnitude
+        local scaleFactor = 1000 / distance
+        local boxSize = Vector2.new(4 * scaleFactor, 6 * scaleFactor)
+        
+        -- Box zeichnen
+        drawings.box.Visible = true
+        drawings.box.Size = boxSize
+        drawings.box.Position = Vector2.new(position.X - boxSize.X / 2, position.Y - boxSize.Y / 2)
+        drawings.box.Color = espColorValue
+        
+        -- Health-Bar zeichnen (wenn aktiviert)
+        if healthSystemEnabled then
+            local healthPercentage = humanoid.Health / humanoid.MaxHealth
+            
+            drawings.healthBarBg.Visible = true
+            drawings.healthBarBg.Size = Vector2.new(boxSize.X, 4)
+            drawings.healthBarBg.Position = Vector2.new(position.X - boxSize.X / 2, position.Y - boxSize.Y / 2 - 10)
+            
+            drawings.healthBar.Visible = true
+            drawings.healthBar.Size = Vector2.new(boxSize.X * healthPercentage, 4)
+            drawings.healthBar.Position = drawings.healthBarBg.Position
+            drawings.healthBar.Color = healthColorValue
+        else
+            drawings.healthBar.Visible = false
+            drawings.healthBarBg.Visible = false
+        end
+
+        -- HEILUNGS-STATUS PRÜFEN UND ANZEIGEN
+        -- Dies ist ein Beispiel. Der genaue Weg, Heilung zu erkennen, hängt stark vom Spiel ab.
+        -- Oft hat der Humanoid eine Eigenschaft wie `HealthChanged` oder man prüft auf spezielle Effekte.
+        -- Hier simulieren wir es: Wenn der Spieler in den letzten 2 Sekunden Schaden genommen hat UND seine Gesundheit jetzt steigt.
+        local isHealing = false -- <-- HIER DEINE HEILUNGS-LOGIK EINFÜGEN
+        -- Beispiel-Logik (könnte so aussehen):
+        -- if humanoid.Health > humanoid.HealthDisplayPrecision.LastDamageTaken then isHealing = true end
+        
+        drawings.healingText.Visible = isHealing
+        drawings.healingText.Text = "HEALING"
+        drawings.healingText.Position = Vector2.new(position.X, position.Y + boxSize.Y / 2 + 15)
+        drawings.healingText.Color = Color3.fromRGB(0, 255, 255) -- Türkis für Heilung
+    end
+end
+
+-- Starte den Render-Loop
+game:GetService("RunService").RenderStepped:Connect(updateESP)
+
+-- Bereinige die Zeichnungen, wenn ein Spieler das Spiel verlässt
+Players.PlayerRemoving:Connect(removeDrawingsForPlayer)
+
+--////////////////////////////////////////////////////
+-- WORLD
+--////////////////////////////////////////////////////
+
+WorldTab:Button({
+Title = "Remove Fog",
+Callback = function()
+Lighting.FogEnd = 100000
+end
+})
+
+WorldTab:Button({
+Title = "Clear Atmosphere",
+Callback = function()
+
+for _,v in pairs(Lighting:GetChildren()) do
+
+if v:IsA("Atmosphere") then
+v:Destroy()
+end
+
+end
+
+end
+})
+------------------------------------------------
+-- TERRAIN COLORS + DARKNESS
+------------------------------------------------
+
+local RGBGrass = false
+local Darkness = 0
+local CurrentStyle = "Default"
+
+------------------------------------------------
+-- DARKEN FUNCTION
+------------------------------------------------
+
+local function DarkenColor(color)
+
+    local multiplier =
+        1 - Darkness
+
+    return Color3.new(
+        color.R * multiplier,
+        color.G * multiplier,
+        color.B * multiplier
+    )
+end
+
+------------------------------------------------
+-- APPLY COLOR
+------------------------------------------------
+
+local function ApplyTerrainColor(color)
+
+    local finalColor =
+        DarkenColor(color)
+
+    workspace.Terrain:SetMaterialColor(
+        Enum.Material.Grass,
+        finalColor
+    )
+
+    workspace.Terrain:SetMaterialColor(
+        Enum.Material.LeafyGrass,
+        finalColor
+    )
+end
+
+------------------------------------------------
+-- UPDATE TERRAIN
+------------------------------------------------
+
+local function UpdateTerrain()
+
+    RGBGrass = false
+
+    ------------------------------------------------
+    -- DEFAULT
+    ------------------------------------------------
+
+    if CurrentStyle == "Default" then
+
+        ApplyTerrainColor(
+            Color3.fromRGB(
+                106,
+                127,
+                63
+            )
+        )
+
+    ------------------------------------------------
+    -- DESERT
+    ------------------------------------------------
+
+    elseif CurrentStyle == "Desert" then
+
+        ApplyTerrainColor(
+            Color3.fromRGB(
+                255,
+                221,
+                120
+            )
+        )
+
+    ------------------------------------------------
+    -- BLACK
+    ------------------------------------------------
+
+    elseif CurrentStyle == "Black" then
+
+        ApplyTerrainColor(
+            Color3.fromRGB(
+                0,
+                0,
+                0
+            )
+        )
+
+    ------------------------------------------------
+    -- SNOW
+    ------------------------------------------------
+
+    elseif CurrentStyle == "Snow" then
+
+        ApplyTerrainColor(
+            Color3.fromRGB(
+                255,
+                255,
+                255
+            )
+        )
+
+    ------------------------------------------------
+    -- PINK
+    ------------------------------------------------
+
+    elseif CurrentStyle == "Pink" then
+
+        ApplyTerrainColor(
+            Color3.fromRGB(
+                255,
+                0,
+                170
+            )
+        )
+
+    ------------------------------------------------
+    -- BLUE
+    ------------------------------------------------
+
+    elseif CurrentStyle == "Blue" then
+
+        ApplyTerrainColor(
+            Color3.fromRGB(
+                0,
+                170,
+                255
+            )
+        )
+
+    ------------------------------------------------
+    -- SMOOTH
+    ------------------------------------------------
+
+    elseif CurrentStyle == "Smooth" then
+
+        ApplyTerrainColor(
+            Color3.fromRGB(
+                75,
+                120,
+                55
+            )
+        )
+
+    ------------------------------------------------
+    -- RGB
+    ------------------------------------------------
+
+    elseif CurrentStyle == "RGB" then
+
+        RGBGrass = true
+
+        task.spawn(function()
+
+            while RGBGrass do
+
+                local hue =
+                    (tick() % 5) / 5
+
+                local color =
+                    Color3.fromHSV(
+                        hue,
+                        1,
+                        1
+                    )
+
+                ApplyTerrainColor(
+                    color
+                )
+
+                task.wait(0.1)
+
+            end
+        end)
+    end
+end
+
+------------------------------------------------
+-- DARKNESS SLIDER
+------------------------------------------------
+
+WorldTab:Slider({
+    Title = "Terrain Darkness",
+
+    Value = {
+        Min = 0,
+        Max = 100,
+        Default = 0
+    },
+
+    Callback = function(v)
+
+        Darkness =
+            v / 100
+
+        UpdateTerrain()
+
+    end
+})
+
+------------------------------------------------
+-- TERRAIN STYLE
+------------------------------------------------
+
+WorldTab:Dropdown({
+    Title = "Terrain Style",
+
+    Values = {
+        "Default",
+        "Desert",
+        "Black",
+        "Snow",
+        "Pink",
+        "Blue",
+        "RGB",
+        "Smooth"
+    },
+
+    Default = "Default",
+
+    Callback = function(v)
+
+        CurrentStyle = v
+
+        UpdateTerrain()
+
+    end
+})
+
+------------------------------------------------
+-- START
+------------------------------------------------
+
+UpdateTerrain()
+--////////////////////////////////////////////////////
+-- MISC
+--////////////////////////////////////////////////////
+
+MiscTab:Button({
+Title = "Rejoin",
+Callback = function()
+
+game:GetService("TeleportService"):Teleport(
+game.PlaceId,
+LocalPlayer
+)
+
+end
+})
+--////////////////////////////////////////////////////
+-- FPS BOOST
+--////////////////////////////////////////////////////
+
+MiscTab:Button({
+Title = "FPS Boost 2",
+
+    Callback = function()
+
+        Lighting.GlobalShadows =
+            false
+
+        settings().Rendering.QualityLevel =
+            Enum.QualityLevel.Level01
+    end
+})
+
+MiscTab:Button({
+    Title = "FPS BOOST",
+
+    Callback = function()
+
+        ------------------------------------------------
+        -- LIGHTING
+        ------------------------------------------------
+
+        local Lighting =
+            game:GetService("Lighting")
+
+        Lighting.GlobalShadows = false
+        Lighting.FogEnd = 100000
+        Lighting.Brightness = 1
+
+        ------------------------------------------------
+        -- TERRAIN
+        ------------------------------------------------
+
+        workspace.Terrain.WaterWaveSize = 0
+        workspace.Terrain.WaterWaveSpeed = 0
+        workspace.Terrain.WaterReflectance = 0
+        workspace.Terrain.WaterTransparency = 1
+
+        ------------------------------------------------
+        -- REMOVE EFFECTS
+        ------------------------------------------------
+
+        for _,v in pairs(
+            Lighting:GetDescendants()
+        ) do
+
+            if v:IsA("BlurEffect")
+            or v:IsA("SunRaysEffect")
+            or v:IsA("BloomEffect")
+            or v:IsA("ColorCorrectionEffect")
+            or v:IsA("DepthOfFieldEffect") then
+
+                v.Enabled = false
+
+            end
+        end
+
+        ------------------------------------------------
+        -- WORLD OPTIMIZE
+        ------------------------------------------------
+
+        for _,obj in pairs(
+            workspace:GetDescendants()
+        ) do
+
+            ------------------------------------------------
+            -- PARTS
+            ------------------------------------------------
+
+            if obj:IsA("BasePart") then
+
+                obj.Material =
+                    Enum.Material.Plastic
+
+                obj.Reflectance = 0
+
+            end
+
+            ------------------------------------------------
+            -- DECALS
+            ------------------------------------------------
+
+            if obj:IsA("Decal")
+            or obj:IsA("Texture") then
+
+                obj.Transparency = 1
+
+            end
+
+            ------------------------------------------------
+            -- PARTICLES
+            ------------------------------------------------
+
+            if obj:IsA("ParticleEmitter")
+            or obj:IsA("Trail")
+            or obj:IsA("Smoke")
+            or obj:IsA("Fire")
+            or obj:IsA("Sparkles") then
+
+                obj.Enabled = false
+
+            end
+        end
+
+        ------------------------------------------------
+        -- SETTINGS
+        ------------------------------------------------
+
+        settings().Rendering.QualityLevel =
+            Enum.QualityLevel.Level01
+
+        ------------------------------------------------
+        -- NOTIFY
+        ------------------------------------------------
+
+        WindUI:Notify({
+            Title = "REXAS",
+            Content = "FPS Boost Applied",
+            Duration = 3
+        })
+
+    end
+})
+------------------------------------------------
+-- SETTINGS
+------------------------------------------------
+
+local ShinyEnabled = false
+local BlackRoads = false
+
+------------------------------------------------
+-- APPLY SHINY
+------------------------------------------------
+
+local function ApplyShiny()
+
+    local char = LocalPlayer.Character
+    if not char then return end
+
+    for _,v in pairs(char:GetDescendants()) do
+
+        if v:IsA("BasePart")
+        or v:IsA("MeshPart")
+        or v:IsA("UnionOperation") then
+
+            if v.Name ~= "HumanoidRootPart" then
+
+                ------------------------------------------------
+                -- ULTRA SHINY
+                ------------------------------------------------
+
+                v.Material = Enum.Material.Glass
+                v.Reflectance = 0.35
+                v.CastShadow = false
+
+            end
+        end
+    end
+
+    ------------------------------------------------
+    -- LIGHTING
+    ------------------------------------------------
+
+    Lighting.Brightness = 3
+    Lighting.Technology = Enum.Technology.Future
+
+    local bloom = Lighting:FindFirstChild("RexasBloom")
+
+    if not bloom then
+
+        bloom = Instance.new("BloomEffect")
+        bloom.Name = "RexasBloom"
+        bloom.Intensity = 2.5
+        bloom.Size = 60
+        bloom.Threshold = 0.7
+        bloom.Parent = Lighting
+
+    end
+end
+
+------------------------------------------------
+-- REMOVE SHINY
+------------------------------------------------
+
+local function RemoveShiny()
+
+    local char = LocalPlayer.Character
+    if not char then return end
+
+    for _,v in pairs(char:GetDescendants()) do
+
+        if v:IsA("BasePart")
+        or v:IsA("MeshPart")
+        or v:IsA("UnionOperation") then
+
+            if v.Name ~= "HumanoidRootPart" then
+
+                v.Material = Enum.Material.Plastic
+                v.Reflectance = 0
+
+            end
+        end
+    end
+
+    local bloom = Lighting:FindFirstChild("RexasBloom")
+
+    if bloom then
+        bloom:Destroy()
+    end
+end
+
+------------------------------------------------
+-- BLACK ROADS
+------------------------------------------------
+
+local function ApplyBlackRoads()
+
+    for _,v in pairs(workspace:GetDescendants()) do
+
+        ------------------------------------------------
+        -- WHITE LINES
+        ------------------------------------------------
+
+        if v:IsA("BasePart") then
+
+            local c = v.Color
+
+            if c.R > 0.7
+            and c.G > 0.7
+            and c.B > 0.7 then
+
+                if v.Size.Y <= 1.5 then
+
+                    v.Color = Color3.new(0,0,0)
+                    v.Material = Enum.Material.SmoothPlastic
+
+                end
+            end
+        end
+
+        ------------------------------------------------
+        -- TEXTURES
+        ------------------------------------------------
+
+        if v:IsA("Texture")
+        or v:IsA("Decal") then
+
+            pcall(function()
+
+                v.Color3 = Color3.new(0,0,0)
+
+            end)
+        end
+    end
+end
+
+------------------------------------------------
+-- SHINY TOGGLE
+------------------------------------------------
+
+ShinyTab:Toggle({
+    Title = "Enable Shiny",
+
+    Callback = function(v)
+
+        ShinyEnabled = v
+
+        if v then
+            ApplyShiny()
+        else
+            RemoveShiny()
+        end
+    end
+})
+
+------------------------------------------------
+-- BLACK ROADS TOGGLE
+------------------------------------------------
+
+ShinyTab:Toggle({
+    Title = "Black Road Lines",
+
+    Callback = function(v)
+
+        BlackRoads = v
+
+        if v then
+            ApplyBlackRoads()
+        end
+    end
+})
+
+------------------------------------------------
+-- REAPPLY AFTER RESPAWN
+------------------------------------------------
+
+LocalPlayer.CharacterAdded:Connect(function()
+
+    task.wait(1)
+
+    if ShinyEnabled then
+        ApplyShiny()
+    end
+
+    if BlackRoads then
+        ApplyBlackRoads()
+    end
+end)
+
+local sounds = {
+    SniperShoot = "rbxassetid://801167040",
+    G36 = "rbxassetid://801226154"
+}
+
+local soundinputs = {}
+local customsoundlist = {"Default"}
+
+if CustomSounds then
+    for customName, _ in pairs(CustomSounds) do
+        table.insert(customsoundlist, customName)
+    end
+end
+
+local soundFolder = nil
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+for _, folder in ipairs(ReplicatedStorage:GetChildren()) do
+    if folder:IsA("Folder") then
+        local children = folder:GetChildren()
+
+        if #children > 0 and children[1]:IsA("Sound") then
+            soundFolder = folder
+            break
+        end
+    end
+end
+
+for name, id in pairs(sounds) do
+    local foundSound = nil
+
+    if soundFolder then
+        for _, obj in ipairs(soundFolder:GetDescendants()) do
+            if obj:IsA("Sound") and obj.SoundId == id then
+                foundSound = obj
+                break
+            end
+        end
+    end
+
+    if foundSound then
+        local currentSound = foundSound
+
+        table.insert(soundinputs, WeaponSoundTab:Dropdown({
+            Title = name .. " Sound",
+            Values = customsoundlist,
+            Multi = false,
+            AllowNone = false,
+            Value = "Default",
+            Flag = name,
+
+            Callback = function(option)
+                if option == "Default" then
+                    currentSound.SoundId = id
+                elseif CustomSounds and CustomSounds[option] then
+                    currentSound.SoundId = CustomSounds[option]
+                end
+            end
+        }))
+    end
+end
+
+Window:SelectTab(1)
